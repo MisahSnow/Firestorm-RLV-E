@@ -137,6 +137,7 @@ set(viewer_SOURCE_FILES
     fsfloaterposer.cpp
     fsfloaterposestand.cpp
     fsfloaterprotectedfolders.cpp
+    fsfloaterremoterlvinventory.cpp
     fsfloaterradar.cpp
     fsfloatersearch.cpp
     fsfloatersplashscreensettings.cpp
@@ -903,6 +904,7 @@ set(viewer_SOURCE_FILES
     rlvhelper.cpp
     rlvinventory.cpp
     rlvlocks.cpp
+    rlvremoteinventory.cpp
     rlvui.cpp
     sanitycheck.cpp
     streamtitledisplay.cpp
@@ -996,6 +998,7 @@ set(viewer_HEADER_FILES
     fsfloaterposer.h
     fsfloaterposestand.h
     fsfloaterprotectedfolders.h
+    fsfloaterremoterlvinventory.h
     fsfloaterradar.h
     fsfloatersearch.h
     fsfloatersplashscreensettings.h
@@ -1758,6 +1761,7 @@ set(viewer_HEADER_FILES
     rlvinventory.h
     rlvlocks.h
     rlvmodifiers.h
+    rlvremoteinventory.h
     rlvui.h
     roles_constants.h
     qtoolalign.h

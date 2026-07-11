@@ -7,7 +7,7 @@
 //
 
 // Bridge platform
-string BRIDGE_VERSION = "2.29"; // This should match fslslbridge.cpp
+string BRIDGE_VERSION = "2.30"; // This should match fslslbridge.cpp
 string gLatestURL;
 integer gViewerIsFirestorm;
 integer gTryHandshakeOnce = TRUE;
@@ -40,6 +40,19 @@ integer gAO_ListenerOC;
 integer gAO_ListenerLM;
 key gAO_CollarKey;
 
+// Remote RLV relay controller
+integer RLVR_CHANNEL = -1812221819;
+integer REMOTE_RLV_CHUNK_SIZE = 600;
+integer gRemoteRelayListener;
+integer gRemoteReplyListener;
+integer gRemoteReplyChannel;
+string gRemoteRequestID;
+string gRemoteIdent;
+string gRemoteCommand;
+key gRemoteTarget;
+integer gRemoteExpectsReply;
+list gRemoteKnownTargets;
+
 //
 // Bridge platform helper functions
 //
@@ -55,6 +68,170 @@ detachBridge()
 {
     llReleaseURL(gLatestURL);
     llRequestPermissions(gOwner, PERMISSION_ATTACH);
+}
+
+//
+// Remote RLV relay controller
+//
+
+remoteRlvClear()
+{
+    llListenRemove(gRemoteReplyListener);
+    gRemoteReplyListener = 0;
+    gRemoteReplyChannel = 0;
+    gRemoteRequestID = "";
+    gRemoteIdent = "";
+    gRemoteCommand = "";
+    gRemoteTarget = NULL_KEY;
+    gRemoteExpectsReply = FALSE;
+}
+
+remoteRlvListen()
+{
+    llListenRemove(gRemoteRelayListener);
+    gRemoteRelayListener = llListen(RLVR_CHANNEL, "", NULL_KEY, "");
+}
+
+remoteRlvRememberTarget(key target)
+{
+    if (llListFindList(gRemoteKnownTargets, [target]) == -1)
+    {
+        if (llGetListLength(gRemoteKnownTargets) >= 12)
+        {
+            gRemoteKnownTargets = llDeleteSubList(gRemoteKnownTargets, 0, 0);
+        }
+        gRemoteKnownTargets += [target];
+    }
+}
+
+remoteRlvSend(string kind, string payload)
+{
+    string encoded = llStringToBase64(payload);
+    integer length = llStringLength(encoded);
+    integer total = (length + REMOTE_RLV_CHUNK_SIZE - 1) / REMOTE_RLV_CHUNK_SIZE;
+    if (total < 1)
+    {
+        total = 1;
+    }
+
+    integer part;
+    for (part = 0; part < total; ++part)
+    {
+        string chunk = llGetSubString(encoded,
+            part * REMOTE_RLV_CHUNK_SIZE,
+            ((part + 1) * REMOTE_RLV_CHUNK_SIZE) - 1);
+        llOwnerSay("<bridgeRemoteRlv>" + gRemoteRequestID + "|" + kind + "|" +
+            (string)(part + 1) + "|" + (string)total + "|" + chunk +
+            "</bridgeRemoteRlv>");
+    }
+}
+
+remoteRlvError(string requestID, string error)
+{
+    remoteRlvClear();
+    gRemoteRequestID = requestID;
+    remoteRlvSend("error", error);
+    remoteRlvClear();
+}
+
+integer remoteRlvUnsafeCommand(string command)
+{
+    if (command == "" || llStringLength(command) > 512 ||
+        (llGetSubString(command, 0, 0) != "@" && llGetSubString(command, 0, 0) != "!") ||
+        llSubStringIndex(command, ",") != -1 ||
+        llSubStringIndex(command, "|") != -1 ||
+        llSubStringIndex(command, "\n") != -1 ||
+        llSubStringIndex(command, "\r") != -1)
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+remoteRlvStart(string requestID, key target, integer expectsReply, string encodedCommand)
+{
+    remoteRlvClear();
+    gRemoteRequestID = requestID;
+
+    if (requestID == "" || target == NULL_KEY || llGetAgentSize(target) == ZERO_VECTOR)
+    {
+        remoteRlvError(requestID, "target_unavailable");
+        return;
+    }
+
+    string command = llBase64ToString(encodedCommand);
+    if (remoteRlvUnsafeCommand(command))
+    {
+        remoteRlvError(requestID, "invalid_request");
+        return;
+    }
+
+    integer placeholder = llSubStringIndex(command, "%CHANNEL%");
+    if ((expectsReply && placeholder == -1) || (!expectsReply && placeholder != -1))
+    {
+        remoteRlvError(requestID, "invalid_request");
+        return;
+    }
+
+    if (expectsReply)
+    {
+        string commandTail = llGetSubString(command, placeholder + 9, -1);
+        if (llSubStringIndex(commandTail, "%CHANNEL%") != -1)
+        {
+            remoteRlvError(requestID, "invalid_request");
+            return;
+        }
+
+        gRemoteReplyChannel = 100000 + (integer)llFrand(2000000000.0);
+        gRemoteReplyListener = llListen(gRemoteReplyChannel, "", target, "");
+        command = llGetSubString(command, 0, placeholder - 1) +
+            (string)gRemoteReplyChannel + commandTail;
+    }
+
+    if (!gRemoteRelayListener)
+    {
+        remoteRlvListen();
+    }
+
+    gRemoteTarget = target;
+    gRemoteExpectsReply = expectsReply;
+    gRemoteCommand = command;
+    gRemoteIdent = "fsri-" + requestID + "-" +
+        (string)(100000 + (integer)llFrand(2000000000.0));
+    remoteRlvRememberTarget(target);
+
+    llRegionSayTo(target, RLVR_CHANNEL,
+        gRemoteIdent + "," + (string)target + "," + gRemoteCommand);
+}
+
+remoteRlvAttachments(string requestID, key target)
+{
+    remoteRlvClear();
+    gRemoteRequestID = requestID;
+    if (requestID == "" || target == NULL_KEY || llGetAgentSize(target) == ZERO_VECTOR)
+    {
+        remoteRlvError(requestID, "target_unavailable");
+        return;
+    }
+
+    list attached = llGetAttachedList(target);
+    list rows;
+    integer count = llGetListLength(attached);
+    integer index;
+    for (index = 0; index < count; ++index)
+    {
+        key objectID = llList2Key(attached, index);
+        list details = llGetObjectDetails(objectID, [OBJECT_NAME, OBJECT_ATTACHED_POINT]);
+        if (llGetListLength(details) == 2)
+        {
+            rows += [(string)objectID + "," +
+                llStringToBase64(llStringTrim(llList2String(details, 0), STRING_TRIM)) + "," +
+                (string)llList2Integer(details, 1)];
+        }
+    }
+
+    remoteRlvSend("attachments", llDumpList2String(rows, "|"));
+    remoteRlvClear();
 }
 
 //
@@ -213,11 +390,23 @@ default
             integrationCheckOC();
             integrationCheckLM();
 
+            // Listen for remote RLV relay acknowledgements and pings.
+            remoteRlvClear();
+            gRemoteKnownTargets = [];
+            remoteRlvListen();
+
             // Assume the worst and let the viewer convince us otherwise
             gTryHandshakeOnce = TRUE;
             gViewerIsFirestorm = FALSE;
             requestBridgeURL();
 
+        }
+        else
+        {
+            remoteRlvClear();
+            llListenRemove(gRemoteRelayListener);
+            gRemoteRelayListener = 0;
+            gRemoteKnownTargets = [];
         }
     }
 
@@ -300,6 +489,13 @@ default
     {
         if (change & CHANGED_REGION)
         {
+            if (gRemoteRequestID != "")
+            {
+                remoteRlvSend("error", "target_unavailable");
+            }
+            remoteRlvClear();
+            gRemoteKnownTargets = [];
+            remoteRlvListen();
             requestBridgeURL();
         }
         else if (change & (CHANGED_INVENTORY | CHANGED_ALLOWED_DROP))
@@ -572,6 +768,30 @@ default
                 }
             }
 
+            else if (cmd == "RemoteRlv")
+            {
+                remoteRlvStart(
+                    llList2String(commandList, 1),
+                    llList2Key(commandList, 2),
+                    llList2Integer(commandList, 3),
+                    llList2String(commandList, 4));
+            }
+
+            else if (cmd == "RemoteRlvAttachments")
+            {
+                remoteRlvAttachments(
+                    llList2String(commandList, 1),
+                    llList2Key(commandList, 2));
+            }
+
+            else if (cmd == "RemoteRlvCancel")
+            {
+                if (gRemoteRequestID == llList2String(commandList, 1))
+                {
+                    remoteRlvClear();
+                }
+            }
+
             else if (cmd == "URL Confirmed")
             {
                 // We're in the right viewer, go on.
@@ -595,8 +815,47 @@ default
     listen(integer fromChan, string senderName, key senderID, string msg)
     {
 
+        // Remote RLV relay acknowledgements and keepalive pings.
+        if (fromChan == RLVR_CHANNEL)
+        {
+            list fields = llParseStringKeepNulls(msg, [","], []);
+            integer fieldCount = llGetListLength(fields);
+            string ident = llList2String(fields, 0);
+            key controller = llList2Key(fields, 1);
+            key relayOwner = llGetOwnerKey(senderID);
+
+            if (fieldCount == 4 && ident == "ping" && controller == llGetKey() &&
+                llList2String(fields, 2) == "ping" && llList2String(fields, 3) == "ping" &&
+                llListFindList(gRemoteKnownTargets, [relayOwner]) != -1)
+            {
+                // !pong deliberately receives no relay acknowledgement.
+                llRegionSayTo(relayOwner, RLVR_CHANNEL,
+                    "ping," + (string)relayOwner + ",!pong");
+            }
+            else if (fieldCount >= 4 && gRemoteRequestID != "" &&
+                ident == gRemoteIdent && controller == llGetKey() &&
+                relayOwner == gRemoteTarget &&
+                llToLower(llList2String(fields, 2)) == llToLower(gRemoteCommand))
+            {
+                string acknowledgement = llDumpList2String(llList2List(fields, 3, -1), ",");
+                remoteRlvSend("ack", acknowledgement);
+                if (!gRemoteExpectsReply || llToLower(acknowledgement) == "ko")
+                {
+                    remoteRlvClear();
+                }
+            }
+        }
+
+        // RLV viewer query response; listener is filtered to the target avatar.
+        else if (fromChan == gRemoteReplyChannel && gRemoteRequestID != "" &&
+                 senderID == gRemoteTarget)
+        {
+            remoteRlvSend("reply", msg);
+            remoteRlvClear();
+        }
+
         // OpenCollar AO interface listen handler
-        if (fromChan == gAO_ChannelOC)
+        else if (fromChan == gAO_ChannelOC)
         {
             integer zhaoPos;
             if ((gAO_CollarKey == NULL_KEY) &&    // No collar paired yet

@@ -119,6 +119,7 @@
 #include "llfloaterpay.h"
 // #include "llfloaterperformance.h" <FS:Beq/> restore fsperf  floater
 #include "fsfloaterperformance.h"
+#include "fsfloaterremoterlvinventory.h"
 #include "llfloaterperms.h"
 #include "llfloaterpreference.h"
 #include "llfloaterpreferencesgraphicsadvanced.h"
@@ -585,6 +586,7 @@ void LLViewerFloaterReg::registerFloaters()
     LLFloaterReg::add("rlv_behaviours", "floater_rlv_behaviours.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<RlvFloaterBehaviours>);
     LLFloaterReg::add("rlv_console", "floater_rlv_console.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<RlvFloaterConsole>);
     LLFloaterReg::add("rlv_locks", "floater_rlv_locks.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<RlvFloaterLocks>);
+    LLFloaterReg::add("fs_remote_rlv_inventory", "floater_fs_remote_rlv_inventory.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterRemoteRlvInventory>);
     LLFloaterReg::add("rlv_strings", "floater_rlv_strings.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<RlvFloaterStrings>);
 // [/RLVa:KB]
 

@@ -47,6 +47,7 @@
 #include "llviewerassetupload.h"
 #include "llviewercontrol.h"
 #include "llviewerregion.h"
+#include "rlvremoteinventory.h"
 
 #if OPENSIM
 #include "llviewernetwork.h"
@@ -55,7 +56,7 @@
 static const std::string FS_BRIDGE_FOLDER = "#LSL Bridge";
 static const std::string FS_BRIDGE_CONTAINER_FOLDER = "Landscaping";
 static const U32 FS_BRIDGE_MAJOR_VERSION = 2;
-static const U32 FS_BRIDGE_MINOR_VERSION = 29;
+static const U32 FS_BRIDGE_MINOR_VERSION = 30;
 static const U32 FS_MAX_MINOR_VERSION = 99;
 static const std::string UPLOAD_SCRIPT_CURRENT = "EBEDD1D2-A320-43f5-88CF-DD47BBCA5DFB.lsltxt";
 static const std::string FS_STATE_ATTRIBUTE = "state=";
@@ -315,7 +316,12 @@ bool FSLSLBridge::lslToViewer(std::string_view message, const LLUUID& fromID, co
     {
         return false;       // ignore if not from the bridge, or bridge is disabled
     }
-    if (tag == "<clientAO ")
+    if (tag == "<bridgeRemoteRlv>")
+    {
+        RlvRemoteInventory::instance().handleBridgeMessage(message);
+        return true;
+    }
+    else if (tag == "<clientAO ")
     {
         // <FS:Zi> do nothing when the FS AO is disabled
         if (!gSavedPerAccountSettings.getBOOL("UseAO"))
