@@ -414,8 +414,9 @@ void RlvRemoteInventory::processBridgePayload(const std::string& kind, const std
         {
             finishCurrent(EStatus::TARGET_UNAVAILABLE, payload);
         }
-        else if (payload == "invalid_request")
+        else if (payload.rfind("invalid_request", 0) == 0)
         {
+            LL_WARNS("RlvRemoteInventory") << "The LSL bridge rejected a remote RLV request: " << payload << LL_ENDL;
             finishCurrent(EStatus::INVALID_REQUEST, payload);
         }
         else

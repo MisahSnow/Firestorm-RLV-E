@@ -7,7 +7,7 @@
 //
 
 // Bridge platform
-string BRIDGE_VERSION = "2.31"; // This should match fslslbridge.cpp
+string BRIDGE_VERSION = "2.32"; // This should match fslslbridge.cpp
 string gLatestURL;
 integer gViewerIsFirestorm;
 integer gTryHandshakeOnce = TRUE;
@@ -162,14 +162,14 @@ remoteRlvStart(string requestID, key target, integer expectsReply, string encode
     string command = llBase64ToString(encodedCommand);
     if (remoteRlvUnsafeCommand(command))
     {
-        remoteRlvError(requestID, "invalid_request");
+        remoteRlvError(requestID, "invalid_request:unsafe_command");
         return;
     }
 
     integer placeholder = llSubStringIndex(command, "%CHANNEL%");
     if ((expectsReply && placeholder == -1) || (!expectsReply && placeholder != -1))
     {
-        remoteRlvError(requestID, "invalid_request");
+        remoteRlvError(requestID, "invalid_request:placeholder_mismatch");
         return;
     }
 
@@ -183,7 +183,7 @@ remoteRlvStart(string requestID, key target, integer expectsReply, string encode
         }
         if (llSubStringIndex(commandTail, "%CHANNEL%") != -1)
         {
-            remoteRlvError(requestID, "invalid_request");
+            remoteRlvError(requestID, "invalid_request:multiple_placeholders");
             return;
         }
 
