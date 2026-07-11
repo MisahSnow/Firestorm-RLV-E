@@ -91,9 +91,22 @@ std::string requestFailureMessage(const RlvRemoteInventory::Result& result)
             return "The request timed out. Their relay may be off, approval may have been declined, RLV may be disabled, or they may be "
                    "out of reply range.";
         case RemoteStatus::INVALID_REQUEST:
-            if (result.payload == "invalid_request:unsafe_command")
+            if (result.payload == "invalid_request:empty")
             {
-                return "The LSL Bridge decoded an empty, overlong, or unsafe relay command.";
+                return "The LSL Bridge received an empty encoded relay command.";
+            }
+            if (result.payload == "invalid_request:overlong")
+            {
+                return "The LSL Bridge decoded an overlong relay command.";
+            }
+            if (result.payload == "invalid_request:bad_prefix")
+            {
+                return "The LSL Bridge decoded a relay command with a corrupted first character.";
+            }
+            if (result.payload == "invalid_request:comma" || result.payload == "invalid_request:pipe" ||
+                result.payload == "invalid_request:newline" || result.payload == "invalid_request:carriage_return")
+            {
+                return "The LSL Bridge decoded an unsafe relay delimiter (" + result.payload.substr(16) + ").";
             }
             if (result.payload == "invalid_request:placeholder_mismatch")
             {

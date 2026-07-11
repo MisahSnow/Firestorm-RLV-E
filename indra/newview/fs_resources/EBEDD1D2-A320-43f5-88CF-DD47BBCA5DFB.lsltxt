@@ -7,7 +7,7 @@
 //
 
 // Bridge platform
-string BRIDGE_VERSION = "2.32"; // This should match fslslbridge.cpp
+string BRIDGE_VERSION = "2.33"; // This should match fslslbridge.cpp
 string gLatestURL;
 integer gViewerIsFirestorm;
 integer gTryHandshakeOnce = TRUE;
@@ -134,18 +134,37 @@ remoteRlvError(string requestID, string error)
     remoteRlvClear();
 }
 
-integer remoteRlvUnsafeCommand(string command)
+string remoteRlvInvalidCommandReason(string command)
 {
-    if (command == "" || llStringLength(command) > 512 ||
-        (llGetSubString(command, 0, 0) != "@" && llGetSubString(command, 0, 0) != "!") ||
-        llSubStringIndex(command, ",") != -1 ||
-        llSubStringIndex(command, "|") != -1 ||
-        llSubStringIndex(command, "\n") != -1 ||
-        llSubStringIndex(command, "\r") != -1)
+    if (command == "")
     {
-        return TRUE;
+        return "empty";
     }
-    return FALSE;
+    if (llStringLength(command) > 512)
+    {
+        return "overlong";
+    }
+    if (llGetSubString(command, 0, 0) != "@" && llGetSubString(command, 0, 0) != "!")
+    {
+        return "bad_prefix";
+    }
+    if (llSubStringIndex(command, ",") != -1)
+    {
+        return "comma";
+    }
+    if (llSubStringIndex(command, "|") != -1)
+    {
+        return "pipe";
+    }
+    if (llSubStringIndex(command, "\n") != -1)
+    {
+        return "newline";
+    }
+    if (llSubStringIndex(command, "\r") != -1)
+    {
+        return "carriage_return";
+    }
+    return "";
 }
 
 remoteRlvStart(string requestID, key target, integer expectsReply, string encodedCommand)
@@ -160,9 +179,10 @@ remoteRlvStart(string requestID, key target, integer expectsReply, string encode
     }
 
     string command = llBase64ToString(encodedCommand);
-    if (remoteRlvUnsafeCommand(command))
+    string invalidReason = remoteRlvInvalidCommandReason(command);
+    if (invalidReason != "")
     {
-        remoteRlvError(requestID, "invalid_request:unsafe_command");
+        remoteRlvError(requestID, "invalid_request:" + invalidReason);
         return;
     }
 
