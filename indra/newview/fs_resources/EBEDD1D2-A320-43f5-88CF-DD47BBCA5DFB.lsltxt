@@ -7,7 +7,7 @@
 //
 
 // Bridge platform
-string BRIDGE_VERSION = "2.30"; // This should match fslslbridge.cpp
+string BRIDGE_VERSION = "2.31"; // This should match fslslbridge.cpp
 string gLatestURL;
 integer gViewerIsFirestorm;
 integer gTryHandshakeOnce = TRUE;
@@ -175,7 +175,12 @@ remoteRlvStart(string requestID, key target, integer expectsReply, string encode
 
     if (expectsReply)
     {
-        string commandTail = llGetSubString(command, placeholder + 9, -1);
+        integer tailStart = placeholder + 9;
+        string commandTail = "";
+        if (tailStart < llStringLength(command))
+        {
+            commandTail = llGetSubString(command, tailStart, -1);
+        }
         if (llSubStringIndex(commandTail, "%CHANNEL%") != -1)
         {
             remoteRlvError(requestID, "invalid_request");
