@@ -1,5 +1,7 @@
 <p align="center">
   <img width="128" height="128" src="doc/firestorm_256.png" alt="Firestorm viewer logo"/>
+  &nbsp;&nbsp;&nbsp;
+  <img width="128" height="128" src="doc/rlv-e-logo.svg" alt="RLV-E heart-lock logo"/>
 </p>
 
 <h1 align="center">Firestorm RLV-E</h1>
