@@ -149,6 +149,7 @@ private:
     bool         mIdleRegistered{ false };
     bool         mVerificationPending{ false };
     LLFrameTimer mVerificationTimer;
+    boost::signals2::scoped_connection mTargetChangedConnection;
 
     std::map<LLUUID, AttachmentRecord> mAttachments;
     std::map<S32, std::string>         mOccupiedAttachmentPoints;

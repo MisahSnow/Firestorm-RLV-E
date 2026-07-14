@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ can_close="true"
+ can_minimize="true"
+ can_resize="true"
+ height="640"
+ min_height="460"
+ min_width="620"
+ name="fs_remote_rlv_restrictions"
+ positioning="cascading"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ title="Remote RLV Restrictions"
+ width="760">
+  <text
+   follows="left|top"
+   height="20"
+   layout="topleft"
+   left="10"
+   name="target_label"
+   top="14"
+   width="52">
+    Person:
+  </text>
+  <text
+   follows="left|right|top"
+   font.style="BOLD"
+   height="20"
+   layout="topleft"
+   left_pad="4"
+   name="target_name"
+   parse_urls="false"
+   top_delta="0"
+   use_ellipses="true"
+   value="No person selected"
+   width="450" />
+  <button
+   follows="right|top"
+   height="24"
+   label="Choose Person..."
+   layout="topleft"
+   name="choose_target_btn"
+   right="-96"
+   top="9"
+   width="124" />
+  <button
+   follows="right|top"
+   height="24"
+   label="Refresh"
+   layout="topleft"
+   name="refresh_btn"
+   right="-10"
+   top="9"
+   width="80" />
+  <text
+   follows="left|right|top"
+   height="44"
+   layout="topleft"
+   left="10"
+   name="status_text"
+   text_color="LabelTextColor"
+   top="40"
+   use_ellipses="true"
+   value="Choose someone in the same region who is wearing an enabled RLV relay."
+   width="740" />
+  <tab_container
+   follows="all"
+   height="548"
+   layout="topleft"
+   left="8"
+   name="remote_restriction_tabs"
+   right="-8"
+   tab_height="24"
+   tab_min_width="150"
+   tab_position="top"
+   top="84">
+    <panel
+     follows="all"
+     height="515"
+     label="Restriction Controls"
+     layout="topleft"
+     name="controls_panel"
+     top="0">
+      <text
+       follows="left|right|top"
+       height="48"
+       layout="topleft"
+       left="8"
+       name="controls_help"
+       top="8"
+       width="720">
+        Checked rules are applied by the target's relay. “Active elsewhere” means another RLV object also reports the rule; this floater cannot release that object's restriction.
+      </text>
+      <scroll_list
+       draw_heading="true"
+       draw_stripes="true"
+       follows="all"
+       layout="topleft"
+       left="8"
+       multi_select="false"
+       name="restriction_list"
+       right="-8"
+       top="58"
+       bottom="-43">
+        <scroll_list.columns type="checkbox" label="On" name="managed" width="42" />
+        <scroll_list.columns label="Category" name="category" width="80" />
+        <scroll_list.columns label="Restriction" name="restriction" width="150" />
+        <scroll_list.columns label="Current state" name="state" width="112" />
+        <scroll_list.columns dynamic_width="true" label="What it does" name="description" />
+      </scroll_list>
+      <button
+       follows="left|bottom"
+       height="24"
+       label="Release All Relay Rules"
+       layout="topleft"
+       left="8"
+       name="release_all_btn"
+       bottom="-8"
+       tool_tip="Release every curated restriction currently owned by the target's relay. Restrictions from other RLV objects remain active."
+       width="174" />
+    </panel>
+    <panel
+     follows="all"
+     height="515"
+     label="Attachments and Locks"
+     layout="topleft"
+     name="attachments_panel"
+     top="0">
+      <text
+       follows="left|right|top"
+       height="50"
+       layout="topleft"
+       left="8"
+       name="attachments_help"
+       top="8"
+       width="720">
+        Shows visible attachments, occupied hidden/HUD points, and aggregate add/removal locks. Standard RLV does not reveal which foreign object issued a self-lock, so uncertain locks are labeled honestly.
+      </text>
+      <scroll_list
+       draw_heading="true"
+       draw_stripes="true"
+       follows="all"
+       layout="topleft"
+       left="8"
+       multi_select="false"
+       name="attachment_list"
+       right="-8"
+       top="60"
+       bottom="-8">
+        <scroll_list.columns dynamic_width="true" label="Attachment" name="name" />
+        <scroll_list.columns label="Point" name="point" width="120" />
+        <scroll_list.columns label="State" name="visibility" width="72" />
+        <scroll_list.columns label="Lock information" name="lock" width="220" />
+      </scroll_list>
+    </panel>
+    <panel
+     follows="all"
+     height="515"
+     label="All Active Rules"
+     layout="topleft"
+     name="active_panel"
+     top="0">
+      <text
+       follows="left|right|top"
+       height="42"
+       layout="topleft"
+       left="8"
+       name="active_help"
+       top="8"
+       width="720">
+        Raw aggregate rules reported by @getstatusall. RLV intentionally does not disclose the exact foreign object responsible for each rule.
+      </text>
+      <scroll_list
+       draw_heading="true"
+       draw_stripes="true"
+       follows="all"
+       layout="topleft"
+       left="8"
+       multi_select="false"
+       name="active_list"
+       right="-8"
+       top="52"
+       bottom="-8">
+        <scroll_list.columns dynamic_width="true" label="Rule" name="rule" />
+        <scroll_list.columns label="Category" name="category" width="110" />
+        <scroll_list.columns label="Reported source" name="source" width="140" />
+      </scroll_list>
+    </panel>
+  </tab_container>
+</floater>

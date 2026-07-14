@@ -3076,6 +3076,16 @@
          function="Floater.Toggle"
          parameter="fs_remote_rlv_inventory" />
       </menu_item_check>
+      <menu_item_check
+       label="Remote RLV Restrictions..."
+       name="Remote RLV Restrictions">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="fs_remote_rlv_restrictions" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="fs_remote_rlv_restrictions" />
+      </menu_item_check>
        <menu_item_check
        label="Console..."
        name="Console">

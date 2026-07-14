@@ -138,6 +138,7 @@ set(viewer_SOURCE_FILES
     fsfloaterposestand.cpp
     fsfloaterprotectedfolders.cpp
     fsfloaterremoterlvinventory.cpp
+    fsfloaterremoterlvrestrictions.cpp
     fsfloaterradar.cpp
     fsfloatersearch.cpp
     fsfloatersplashscreensettings.cpp
@@ -999,6 +1000,7 @@ set(viewer_HEADER_FILES
     fsfloaterposestand.h
     fsfloaterprotectedfolders.h
     fsfloaterremoterlvinventory.h
+    fsfloaterremoterlvrestrictions.h
     fsfloaterradar.h
     fsfloatersearch.h
     fsfloatersplashscreensettings.h

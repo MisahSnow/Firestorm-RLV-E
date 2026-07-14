@@ -317,7 +317,6 @@ FSFloaterRemoteRlvInventory::FSFloaterRemoteRlvInventory(const LLSD& key) :
 FSFloaterRemoteRlvInventory::~FSFloaterRemoteRlvInventory()
 {
     ++mRequestGeneration;
-    RlvRemoteInventory::instance().cancelAll();
     if (mIdleRegistered)
     {
         gIdleCallbacks.deleteFunction(onIdle, this);
@@ -344,6 +343,19 @@ bool FSFloaterRemoteRlvInventory::postBuild()
     mDetachAttachedButton->setCommitCallback([this](LLUICtrl*, const LLSD&) { onDetachAttached(); });
     getChild<LLButton>("refresh_attached_btn")->setCommitCallback([this](LLUICtrl*, const LLSD&) { beginRefresh(); });
     mAttachedList->setCommitCallback([this](LLUICtrl*, const LLSD&) { updateControls(); });
+    mTargetChangedConnection = RlvRemoteInventory::instance().setTargetChangedCallback(
+        [this](const LLUUID& id, const std::string& name)
+        {
+            if (id != mTargetId)
+            {
+                setTarget(id, name);
+            }
+            else if (!name.empty() && name != mTargetName)
+            {
+                mTargetName = name;
+                mTargetNameText->setValue(name);
+            }
+        });
 
     initFolderRoot();
     clearRemoteData();
@@ -360,6 +372,7 @@ void FSFloaterRemoteRlvInventory::onOpen(const LLSD& key)
     }
 
     LLUUID target;
+    bool   target_applied = false;
     if (key.isMap() && key.has("avatar_id"))
     {
         target = key["avatar_id"].asUUID();
@@ -371,13 +384,23 @@ void FSFloaterRemoteRlvInventory::onOpen(const LLSD& key)
     if (target.notNull() && target != mTargetId)
     {
         setTargetFromId(target);
+        target_applied = true;
+    }
+    else if (target.isNull() && RlvRemoteInventory::instance().getSelectedTarget().notNull() &&
+             RlvRemoteInventory::instance().getSelectedTarget() != mTargetId)
+    {
+        setTarget(RlvRemoteInventory::instance().getSelectedTarget(), RlvRemoteInventory::instance().getSelectedTargetName());
+        target_applied = true;
+    }
+    if (!target_applied && mTargetId.notNull() && !mRelayReady)
+    {
+        beginRefresh();
     }
 }
 
 void FSFloaterRemoteRlvInventory::onClose(bool app_quitting)
 {
     ++mRequestGeneration;
-    RlvRemoteInventory::instance().cancelAll();
     mRelayReady          = false;
     mVerificationPending = false;
     if (mIdleRegistered)
@@ -593,13 +616,12 @@ void FSFloaterRemoteRlvInventory::onTargetPicked(const uuid_vec_t& ids, const st
         return;
     }
     const std::string name = !names.empty() ? names.front().getCompleteName() : ids.front().asString();
-    setTarget(ids.front(), name);
+    RlvRemoteInventory::instance().setSelectedTarget(ids.front(), name);
 }
 
 void FSFloaterRemoteRlvInventory::setTarget(const LLUUID& id, const std::string& name)
 {
     ++mRequestGeneration;
-    RlvRemoteInventory::instance().cancelAll();
     mTargetId            = id;
     mTargetName          = name;
     mRelayReady          = false;
@@ -607,7 +629,14 @@ void FSFloaterRemoteRlvInventory::setTarget(const LLUUID& id, const std::string&
     mTargetNameText->setValue(name.empty() ? id.asString() : name);
     clearRemoteData();
     updateControls();
-    beginRefresh();
+    if (getVisible())
+    {
+        beginRefresh();
+    }
+    else
+    {
+        setStatus("Target synchronized. Open this floater or refresh to load their remote RLV inventory.");
+    }
 }
 
 void FSFloaterRemoteRlvInventory::setTargetFromId(const LLUUID& id)
@@ -618,14 +647,18 @@ void FSFloaterRemoteRlvInventory::setTargetFromId(const LLUUID& id)
     }
 
     LLAvatarName cached_name;
-    setTarget(id, LLAvatarNameCache::get(id, &cached_name) ? cached_name.getCompleteName() : id.asString());
+    RlvRemoteInventory::instance().setSelectedTarget(
+        id, LLAvatarNameCache::get(id, &cached_name) ? cached_name.getCompleteName() : id.asString());
+    if (id != mTargetId)
+    {
+        setTarget(id, RlvRemoteInventory::instance().getSelectedTargetName());
+    }
     LLAvatarNameCache::get(id,
-                           [handle = getDerivedHandle<FSFloaterRemoteRlvInventory>(), id](const LLUUID&, const LLAvatarName& avatar_name)
+                           [id](const LLUUID&, const LLAvatarName& avatar_name)
                            {
-                               if (FSFloaterRemoteRlvInventory* self = handle.get(); self && self->mTargetId == id)
+                               if (RlvRemoteInventory::instance().getSelectedTarget() == id)
                                {
-                                   self->mTargetName = avatar_name.getCompleteName();
-                                   self->mTargetNameText->setValue(self->mTargetName);
+                                   RlvRemoteInventory::instance().setSelectedTarget(id, avatar_name.getCompleteName());
                                }
                            });
 }

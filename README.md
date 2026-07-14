@@ -6,19 +6,49 @@
 
 <h1 align="center">Firestorm RLV-E</h1>
 
-Firestorm RLV-E is an unofficial fork of the [Firestorm Viewer](https://github.com/FirestormViewer/phoenix-firestorm) focused on expanding RLV play with remote wardrobe and attachment controls.
+Firestorm RLV-E is an unofficial fork of the [Firestorm Viewer](https://github.com/FirestormViewer/phoenix-firestorm) focused on expanding consensual RLV play with remote wardrobe, attachment, and restriction controls.
 
-It is based on Firestorm's source code and currently adds a remote RLV wardrobe and inventory interface, together with the viewer and LSL bridge integration needed to browse and manage attachments remotely.
+It adds viewer-native remote RLV floaters and extends the Firestorm LSL Bridge so an authorized relay can expose useful wardrobe and restriction state without requiring separate controller HUDs.
 
 > [!IMPORTANT]
 > This project is not the official Firestorm Viewer and is not supported by the Firestorm team. For the original source, official releases, documentation, and support, visit the [Firestorm Viewer repository](https://github.com/FirestormViewer/phoenix-firestorm) or [firestormviewer.org](https://www.firestormviewer.org).
 
 ## RLV-E additions
 
-- Remote RLV wardrobe and inventory floater
-- Viewer-side remote inventory and attachment handling
-- Firestorm LSL bridge integration for remote RLV commands
-- Diagnostics for bridge command validation and communication
+### Remote RLV Wardrobe
+
+- Browse the target's shared `#RLV` folder hierarchy and worn-state summaries
+- Attach, replace, or detach shared folders through standard RLV commands
+- Inspect visible worn attachments and occupied attachment points
+- Refresh individual folders or the complete remote wardrobe
+
+### Remote RLV Restrictions
+
+- Toggle common chat, movement, teleport, interaction, privacy, camera, clothing, and attachment restrictions
+- Distinguish restrictions owned by the target relay from rules applied by other RLV objects
+- Inspect aggregate active rules, occupied attachment points, and available lock information
+- Release the curated restrictions owned by the relay without clearing unrelated restrictions
+
+### Shared remote session
+
+- Selecting a person in either remote RLV floater selects them in both
+- Open floaters refresh automatically; closed floaters retain the selection for their next opening
+- Requests are serialized through the Firestorm LSL Bridge to avoid competing relay sessions
+- Bridge replies are memory-safe chunked for large restriction and inventory responses
+
+## Requirements and privacy boundaries
+
+Remote controls require:
+
+- RLV enabled on the target's viewer
+- An enabled RLV relay worn by the target
+- Relay permission for the controller
+- Both avatars in the same region and within reply range
+- A working Firestorm LSL Bridge on the controller
+
+Standard RLV exposes shared **folder names** and folder-level worn summaries, but it does not provide a way to enumerate every inventory item inside another avatar's folders. RLV-E can show visible worn attachment names and occupied points, while unnamed or unworn inventory remains private. Similarly, aggregate restriction queries do not disclose the exact foreign object responsible for every rule.
+
+These limitations are intentional: RLV-E uses the existing RLV permission and relay model rather than bypassing the target viewer's consent or inventory privacy.
 
 ## Upstream
 

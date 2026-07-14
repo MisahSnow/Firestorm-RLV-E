@@ -25,6 +25,8 @@
 #include "llsingleton.h"
 #include "lluuid.h"
 
+#include <boost/signals2.hpp>
+
 #include <deque>
 #include <functional>
 #include <map>
@@ -67,6 +69,19 @@ public:
     };
 
     using callback_t = std::function<void(const Result&)>;
+    using target_changed_signal_t = boost::signals2::signal<void(const LLUUID&, const std::string&)>;
+
+    /**
+     * Set the avatar shared by all remote RLV floaters. Changing the avatar
+     * cancels requests for the previous target before notifying listeners.
+     */
+    void setSelectedTarget(const LLUUID& target, const std::string& name);
+    const LLUUID& getSelectedTarget() const { return mSelectedTarget; }
+    const std::string& getSelectedTargetName() const { return mSelectedTargetName; }
+    boost::signals2::connection setTargetChangedCallback(const target_changed_signal_t::slot_type& callback)
+    {
+        return mTargetChangedSignal.connect(callback);
+    }
 
     /**
      * Queue one relay command.  Query commands must contain exactly one
@@ -136,6 +151,9 @@ private:
     std::optional<Request>               mCurrent;
     std::map<std::string, ChunkAssembly> mAssemblies;
     LLFrameTimer                         mRequestTimer;
+    LLUUID                              mSelectedTarget;
+    std::string                         mSelectedTargetName;
+    target_changed_signal_t             mTargetChangedSignal;
 };
 
 #endif // RLV_REMOTE_INVENTORY_H

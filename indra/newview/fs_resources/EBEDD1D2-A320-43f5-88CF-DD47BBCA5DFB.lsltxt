@@ -7,7 +7,7 @@
 //
 
 // Bridge platform
-string BRIDGE_VERSION = "2.34"; // This should match fslslbridge.cpp
+string BRIDGE_VERSION = "2.35"; // This should match fslslbridge.cpp
 string gLatestURL;
 integer gViewerIsFirestorm;
 integer gTryHandshakeOnce = TRUE;
@@ -42,7 +42,10 @@ key gAO_CollarKey;
 
 // Remote RLV relay controller
 integer RLVR_CHANNEL = -1812221819;
-integer REMOTE_RLV_CHUNK_SIZE = 600;
+integer REMOTE_RLV_ENCODED_CHUNK_SIZE = 600;
+// Start with 450 characters per slice, then shrink for multi-byte UTF-8 until
+// its Base64 form fits the encoded limit above.
+integer REMOTE_RLV_RAW_CHUNK_SIZE = 450;
 integer gRemoteRelayListener;
 integer gRemoteReplyListener;
 integer gRemoteReplyChannel;
@@ -106,23 +109,48 @@ remoteRlvRememberTarget(key target)
 
 remoteRlvSend(string kind, string payload)
 {
-    string encoded = llStringToBase64(payload);
-    integer length = llStringLength(encoded);
-    integer total = (length + REMOTE_RLV_CHUNK_SIZE - 1) / REMOTE_RLV_CHUNK_SIZE;
-    if (total < 1)
+    integer length = llStringLength(payload);
+    integer total;
+    integer offset;
+    integer end;
+    string chunk;
+
+    // Count the adaptive raw slices first because the viewer protocol includes
+    // the final part count in every message.
+    while (offset < length)
     {
-        total = 1;
+        end = offset + REMOTE_RLV_RAW_CHUNK_SIZE - 1;
+        chunk = llStringToBase64(llGetSubString(payload, offset, end));
+        while (llStringLength(chunk) > REMOTE_RLV_ENCODED_CHUNK_SIZE)
+        {
+            end -= 25;
+            chunk = llStringToBase64(llGetSubString(payload, offset, end));
+        }
+        ++total;
+        offset = end + 1;
     }
+    if (!total) total = 1;
 
     integer part;
-    for (part = 0; part < total; ++part)
+    offset = 0;
+    while (part < total)
     {
-        string chunk = llGetSubString(encoded,
-            part * REMOTE_RLV_CHUNK_SIZE,
-            ((part + 1) * REMOTE_RLV_CHUNK_SIZE) - 1);
+        // Encode one small raw slice instead of creating a Base64 copy of the
+        // entire response. Large @getstatusall replies otherwise exhaust the
+        // bridge script's Mono memory and cause a stack-heap collision.
+        end = offset + REMOTE_RLV_RAW_CHUNK_SIZE - 1;
+        chunk = llStringToBase64(llGetSubString(payload, offset, end));
+        while (llStringLength(chunk) > REMOTE_RLV_ENCODED_CHUNK_SIZE)
+        {
+            end -= 25;
+            chunk = llStringToBase64(llGetSubString(payload, offset, end));
+        }
         llOwnerSay("<bridgeRemoteRlv>" + gRemoteRequestID + "|" + kind + "|" +
             (string)(part + 1) + "|" + (string)total + "|" + chunk +
             "</bridgeRemoteRlv>");
+        chunk = "";
+        offset = end + 1;
+        ++part;
     }
 }
 

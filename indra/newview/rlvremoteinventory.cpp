@@ -71,6 +71,23 @@ RlvRemoteInventory::~RlvRemoteInventory()
     mAssemblies.clear();
 }
 
+void RlvRemoteInventory::setSelectedTarget(const LLUUID& target, const std::string& name)
+{
+    const bool target_changed = target != mSelectedTarget;
+    if (!target_changed && name == mSelectedTargetName)
+    {
+        return;
+    }
+
+    if (target_changed)
+    {
+        cancelAll();
+    }
+    mSelectedTarget     = target;
+    mSelectedTargetName = name;
+    mTargetChangedSignal(mSelectedTarget, mSelectedTargetName);
+}
+
 void RlvRemoteInventory::sendRelayCommand(const LLUUID& target, const std::string& command_template, bool expects_reply,
                                           callback_t callback)
 {
@@ -211,6 +228,13 @@ void RlvRemoteInventory::handleBridgeMessage(std::string_view message)
         return;
     }
 
+    if (!isValidBase64(chunk))
+    {
+        finishCurrent(EStatus::PROTOCOL_ERROR, "Invalid base64 bridge chunk");
+        return;
+    }
+    std::string decoded_chunk = chunk.empty() ? std::string() : LLBase64::decodeAsString(chunk);
+
     ChunkAssembly& assembly = mAssemblies[kind];
     if (assembly.total == 0)
     {
@@ -226,34 +250,27 @@ void RlvRemoteInventory::handleBridgeMessage(std::string_view message)
     std::string& destination = assembly.chunks[part - 1];
     if (!destination.empty())
     {
-        if (destination != chunk)
+        if (destination != decoded_chunk)
         {
             finishCurrent(EStatus::PROTOCOL_ERROR, "Conflicting duplicate bridge chunk");
         }
         return;
     }
 
-    destination = std::move(chunk);
+    destination = std::move(decoded_chunk);
     ++assembly.received;
     if (assembly.received != assembly.total)
     {
         return;
     }
 
-    std::string encoded;
-    for (const std::string& encoded_chunk : assembly.chunks)
+    std::string payload;
+    for (const std::string& payload_chunk : assembly.chunks)
     {
-        encoded += encoded_chunk;
+        payload += payload_chunk;
     }
     mAssemblies.erase(kind);
-
-    if (!isValidBase64(encoded))
-    {
-        finishCurrent(EStatus::PROTOCOL_ERROR, "Invalid base64 bridge payload");
-        return;
-    }
-
-    processBridgePayload(kind, encoded.empty() ? std::string() : LLBase64::decodeAsString(encoded));
+    processBridgePayload(kind, payload);
 }
 
 void RlvRemoteInventory::onIdle(void* userdata)
