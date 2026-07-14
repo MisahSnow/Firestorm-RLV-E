@@ -7,7 +7,7 @@
 //
 
 // Bridge platform
-string BRIDGE_VERSION = "2.33"; // This should match fslslbridge.cpp
+string BRIDGE_VERSION = "2.34"; // This should match fslslbridge.cpp
 string gLatestURL;
 integer gViewerIsFirestorm;
 integer gTryHandshakeOnce = TRUE;
@@ -160,9 +160,13 @@ string remoteRlvInvalidCommandReason(string command)
     {
         return "newline";
     }
-    if (llSubStringIndex(command, "\r") != -1)
+    if (llSubStringIndex(command, llUnescapeURL("%0D")) != -1)
     {
         return "carriage_return";
+    }
+    if (llSubStringIndex(command, llUnescapeURL("%09")) != -1)
+    {
+        return "tab";
     }
     return "";
 }

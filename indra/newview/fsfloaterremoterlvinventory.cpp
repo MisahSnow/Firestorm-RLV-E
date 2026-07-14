@@ -104,7 +104,8 @@ std::string requestFailureMessage(const RlvRemoteInventory::Result& result)
                 return "The LSL Bridge decoded a relay command with a corrupted first character.";
             }
             if (result.payload == "invalid_request:comma" || result.payload == "invalid_request:pipe" ||
-                result.payload == "invalid_request:newline" || result.payload == "invalid_request:carriage_return")
+                result.payload == "invalid_request:newline" || result.payload == "invalid_request:carriage_return" ||
+                result.payload == "invalid_request:tab")
             {
                 return "The LSL Bridge decoded an unsafe relay delimiter (" + result.payload.substr(16) + ").";
             }
