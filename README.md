@@ -1,36 +1,41 @@
-<img align="left" width="100" height="100" src="doc/firestorm_256.png" alt="Logo of Firestorm viewer"/>
+<img align="left" width="100" height="100" src="doc/firestorm_256.png" alt="Firestorm viewer logo"/>
 
-**[Firestorm](https://www.firestormviewer.org) is a free client for 3D virtual worlds such as Second Life and various OpenSim worlds where users can create, connect and chat with others from around the world.**
+# Firestorm RLV-E
 
-This repository contains the official source code for the Firestorm viewer.
+Firestorm RLV-E is an unofficial fork of the [Firestorm Viewer](https://github.com/FirestormViewer/phoenix-firestorm) focused on extended RLV workflows.
 
-## Open Source
+It is based on Firestorm's source code and currently adds a remote RLV wardrobe and inventory interface, together with the viewer and LSL bridge integration needed to browse and manage attachments remotely.
 
-Firestorm is a third party viewer derived from the official [Second Life](https://github.com/secondlife/viewer) client. The client codebase has been open source since 2007 and is available under the LGPL license.
+> [!IMPORTANT]
+> This project is not the official Firestorm Viewer and is not supported by the Firestorm team. For the original source, official releases, documentation, and support, visit the [Firestorm Viewer repository](https://github.com/FirestormViewer/phoenix-firestorm) or [firestormviewer.org](https://www.firestormviewer.org).
 
-## Download
+## RLV-E additions
 
-Pre-built versions of the viewer releases for Windows, Mac and Linux can be downloaded from the [official website](https://www.firestormviewer.org/choose-your-platform/).
+- Remote RLV wardrobe and inventory floater
+- Viewer-side remote inventory and attachment handling
+- Firestorm LSL bridge integration for remote RLV commands
+- Diagnostics for bridge command validation and communication
 
-## Build Instructions
+## Upstream
 
-Build instructions for each operating system can be found using the links below and in the official [wiki](https://wiki.firestormviewer.org).
+Firestorm RLV-E tracks [FirestormViewer/phoenix-firestorm](https://github.com/FirestormViewer/phoenix-firestorm) as its upstream project. Firestorm itself is a third-party viewer derived from the official [Second Life Viewer](https://github.com/secondlife/viewer).
+
+Changes that are generally useful to Firestorm should be proposed to the original project according to its [contribution guidelines](https://github.com/FirestormViewer/phoenix-firestorm/blob/master/CONTRIBUTING.md).
+
+## Build instructions
+
+The existing Firestorm build documentation is included in this repository:
 
 - [Windows](doc/building_windows.md)
-- [Mac](doc/building_macos.md)
+- [macOS](doc/building_macos.md)
 - [Linux](doc/building_linux.md)
 
-> [!NOTE]
-> We do not provide support for compiling the viewer or issues resulting from using a self-compiled viewer. However, there is a self-compilers group within Second Life that can be joined to ask questions related to compiling the viewer: [Firestorm Self Compilers](https://tinyurl.com/firestorm-self-compilers)
+Additional upstream documentation is available in the official [Firestorm wiki](https://wiki.firestormviewer.org).
 
-## Contribute
+## License
 
-Help make Firestorm better! You can get involved with improvements by filing bugs and suggesting enhancements via [JIRA](https://jira.firestormviewer.org) or [creating pull requests](CONTRIBUTING.md).
+Firestorm RLV-E is distributed under the same open-source licensing terms as its upstream Firestorm codebase. See [LICENSE](LICENSE) and the source-file headers for details.
 
-## Community respect
+## Community standards
 
-This section is guided by the [TPV Policy](https://secondlife.com/corporate/third-party-viewers) and the [Second Life Code of Conduct](https://github.com/secondlife/viewer?tab=coc-ov-file).
-
-Firestorm code is made available during ongoing development, with the **master** branch representing the current nightly build. Developers and self-compilers are encouraged to work on their own forks and contribute back via pull requests, as detailed in the [contributing guide](CONTRIBUTING.md).
-
-If you intend to use our code for your own viewer beyond personal use, please only use code from official release branches (for example, `Firestorm_7.1.13`), rather than from pre-release/preview or nightly builds.
+Use of this viewer and contributions to this repository should follow the [Second Life Third Party Viewer Policy](https://secondlife.com/corporate/third-party-viewers) and the [Second Life Code of Conduct](https://github.com/secondlife/viewer?tab=coc-ov-file).
