@@ -1,8 +1,10 @@
-<img align="left" width="100" height="100" src="doc/firestorm_256.png" alt="Firestorm viewer logo"/>
+<p align="center">
+  <img width="128" height="128" src="doc/firestorm_256.png" alt="Firestorm viewer logo"/>
+</p>
 
-# Firestorm RLV-E
+<h1 align="center">Firestorm RLV-E</h1>
 
-Firestorm RLV-E is an unofficial fork of the [Firestorm Viewer](https://github.com/FirestormViewer/phoenix-firestorm) focused on extended RLV workflows.
+Firestorm RLV-E is an unofficial fork of the [Firestorm Viewer](https://github.com/FirestormViewer/phoenix-firestorm) focused on expanding RLV play with remote wardrobe and attachment controls.
 
 It is based on Firestorm's source code and currently adds a remote RLV wardrobe and inventory interface, together with the viewer and LSL bridge integration needed to browse and manage attachments remotely.
 
