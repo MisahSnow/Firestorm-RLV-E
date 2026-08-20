@@ -1,0 +1,2 @@
+[console_scripts]
+autobuild = autobuild.autobuild_main:main
