@@ -27,6 +27,7 @@
 
 #include "llinventorygallery.h"
 #include "llinventorygallerymenu.h"
+#include "fsattachmentlayers.h"
 
 #include "llagent.h"
 #include "llappearancemgr.h"
@@ -137,7 +138,23 @@ void LLInventoryGalleryContextMenu::doToSelected(const LLSD& userdata)
     LLInventoryObject* obj = gInventory.getObject(mUUIDs.front());
     if(!obj) return;
 
-    if ("open_selected_folder" == action)
+    if (FSAttachmentLayers::isLayerAction(action))
+    {
+        const FSAttachmentLayers::Layer layer = FSAttachmentLayers::fromAction(action);
+        for (const LLUUID& id : mUUIDs)
+        {
+            if (gInventory.getCategory(id))
+            {
+                FSAttachmentLayers::setLayerRecursive(id, layer);
+            }
+            else if (const LLViewerInventoryItem* item = gInventory.getItem(id);
+                     item && item->getType() == LLAssetType::AT_OBJECT)
+            {
+                FSAttachmentLayers::setLayer(id, layer);
+            }
+        }
+    }
+    else if ("open_selected_folder" == action)
     {
         mGallery->setRootFolder(mUUIDs.front());
     }
@@ -1018,6 +1035,14 @@ void LLInventoryGalleryContextMenu::updateMenuItemsVisibility(LLContextMenu* men
                 }
             }
         }
+        if (is_agent_inventory && (is_folder || obj->getType() == LLAssetType::AT_OBJECT))
+        {
+            add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer None");
+            add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Top");
+            add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Bottom");
+            add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Hair");
+            add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Full Body");
+        }
         if(obj->getType() == LLAssetType::AT_TEXTURE)
         {
             items.push_back(std::string("Save As"));
@@ -1116,4 +1141,3 @@ void LLInventoryGalleryContextMenu::updateMenuItemsVisibility(LLContextMenu* men
 
     hide_context_entries(*menu, items, disabled_items);
 }
-

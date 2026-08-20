@@ -26,6 +26,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llinventorybridge.h"
+#include "fsattachmentlayers.h"
 
 // external projects
 #include "lltransfersourceasset.h"
@@ -147,7 +148,8 @@ namespace
 {
     constexpr bool is_context_submenu_branch(std::string_view name)
     {
-        return (name == "More") || (name == "create_new") || (name == INVENTORY_SUBMENU_MARKETPLACE) || (name == INVENTORY_SUBMENU_LINKS);
+        return (name == "More") || (name == "create_new") || (name == INVENTORY_SUBMENU_MARKETPLACE) ||
+               (name == INVENTORY_SUBMENU_LINKS) || (name == "Attachment Layer");
     }
 }
 
@@ -3891,7 +3893,12 @@ void LLInventoryCopyAndWearObserver::changed(U32 mask)
 
 void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 {
-    if ("open" == action)
+    if (FSAttachmentLayers::isLayerAction(action))
+    {
+        FSAttachmentLayers::setLayerRecursive(mUUID, FSAttachmentLayers::fromAction(action));
+        return;
+    }
+    else if ("open" == action)
     {
         LLFolderViewFolder *f = dynamic_cast<LLFolderViewFolder   *>(mInventoryPanel.get()->getItemByID(mUUID));
         if (f)
@@ -5481,6 +5488,15 @@ void LLFolderBridge::buildContextMenuFolderOptions(U32 flags,   menuentry_vec_t&
         }
         items.push_back(std::string("Outfit Separator"));
 
+    }
+
+    if (is_agent_inventory)
+    {
+        add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer None");
+        add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Top");
+        add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Bottom");
+        add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Hair");
+        add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Full Body");
     }
 }
 
@@ -8032,7 +8048,11 @@ void handle_attachment_texture_refresh(const LLUUID& idItem)
 // virtual
 void LLObjectBridge::performAction(LLInventoryModel* model, std::string action)
 {
-    if (isAddAction(action))
+    if (FSAttachmentLayers::isLayerAction(action))
+    {
+        FSAttachmentLayers::setLayer(mUUID, FSAttachmentLayers::fromAction(action));
+    }
+    else if (isAddAction(action))
     {
         LLUUID object_id = mUUID;
         LLViewerInventoryItem* item;
@@ -8149,6 +8169,11 @@ void rez_attachment(LLViewerInventoryItem* item, LLViewerJointAttachment* attach
         return;
     }
 
+    if (!FSAttachmentLayers::removeConflictingAttachments(item_id))
+    {
+        return;
+    }
+
     S32 attach_pt = 0;
     if (isAgentAvatarValid() && attachment)
     {
@@ -8257,6 +8282,12 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
         if(item)
         {
             if (!isAgentAvatarValid()) return;
+
+            add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer None");
+            add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Top");
+            add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Bottom");
+            add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Hair");
+            add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Full Body");
 
             if( get_is_item_worn( mUUID ) )
             {

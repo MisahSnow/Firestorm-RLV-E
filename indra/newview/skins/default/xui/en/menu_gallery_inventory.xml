@@ -379,6 +379,26 @@
      label="Attach To HUD"
      layout="topleft"
      name="Attach To HUD" />
+    <menu
+     label="Attachment Layer"
+     layout="topleft"
+     name="Attachment Layer">
+        <menu_item_call label="None" name="Attachment Layer None">
+            <menu_item_call.on_click function="Inventory.DoToSelected" parameter="set_attachment_layer_none" />
+        </menu_item_call>
+        <menu_item_call label="Top" name="Attachment Layer Top">
+            <menu_item_call.on_click function="Inventory.DoToSelected" parameter="set_attachment_layer_top" />
+        </menu_item_call>
+        <menu_item_call label="Bottom" name="Attachment Layer Bottom">
+            <menu_item_call.on_click function="Inventory.DoToSelected" parameter="set_attachment_layer_bottom" />
+        </menu_item_call>
+        <menu_item_call label="Hair" name="Attachment Layer Hair">
+            <menu_item_call.on_click function="Inventory.DoToSelected" parameter="set_attachment_layer_hair" />
+        </menu_item_call>
+        <menu_item_call label="Full Body" name="Attachment Layer Full Body">
+            <menu_item_call.on_click function="Inventory.DoToSelected" parameter="set_attachment_layer_full_body" />
+        </menu_item_call>
+    </menu>
     <menu_item_call
      label="Touch"
      layout="topleft"

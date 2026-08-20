@@ -3321,6 +3321,7 @@ Your current position: [AVATAR_POS]
   <string name="Nametag_Complexity_Label">Complexity: [COMPLEXITY]</string>
   <string name="Nametag_Texture_Area_Label">Texture Area: [TEXTURE_AREA] m²</string>
 
+  <string name="AttachmentLayerConflictLocked">The attachment layer could not be changed because a conflicting attachment is locked by RLV.</string>
   <string name="font_unknown">Unknown Font</string>
   <string name="font_fonts.xml">Inter</string>
   <string name="font_fonts_inter_tight.xml">Inter Tight</string>

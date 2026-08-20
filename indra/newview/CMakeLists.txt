@@ -102,6 +102,7 @@ set(viewer_SOURCE_FILES
     floatermedialists.cpp
     fsareasearch.cpp
     fsareasearchmenu.cpp
+    fsattachmentlayers.cpp
     fsassetblacklist.cpp
     fsavatarrenderpersistence.cpp
     fsavatarsearchmenu.cpp
@@ -962,6 +963,7 @@ set(viewer_HEADER_FILES
     floatermedialists.h
     fsareasearch.h
     fsareasearchmenu.h
+    fsattachmentlayers.h
     fsassetblacklist.h
     fsavatarrenderpersistence.h
     fsavatarsearchmenu.h

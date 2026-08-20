@@ -1552,6 +1552,17 @@
         <key>Value</key>
             <integer>1</integer>
         </map>
+    <key>FSAttachmentLayers</key>
+        <map>
+            <key>Comment</key>
+            <string>Inventory attachment UUIDs mapped to user-assigned attachment layers.</string>
+            <key>Persist</key>
+            <integer>1</integer>
+            <key>Type</key>
+            <string>LLSD</string>
+            <key>Value</key>
+            <map/>
+        </map>
     <key>FSCurrentAOState</key>
         <map>
             <key>Comment</key>
