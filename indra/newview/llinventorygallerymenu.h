@@ -39,6 +39,9 @@ public:
 
     bool isRootFolder() { return mRootFolder; }
     void setRootFolder(bool is_root) { mRootFolder = is_root; }
+// <FS:MS> Preserve the item that opened a multi-selection context menu.
+    void setContextItemID(const LLUUID& item_id) { mContextItemID = item_id; }
+// </FS:MS>
     void doToSelected(const LLSD& userdata);
     void rename(const LLUUID& item_id);
 
@@ -58,6 +61,9 @@ private:
 
     LLInventoryGallery* mGallery;
     bool mRootFolder;
+// <FS:MS> Auto-attach parent selected by right-click.
+    LLUUID mContextItemID;
+// </FS:MS>
 };
 
 #endif

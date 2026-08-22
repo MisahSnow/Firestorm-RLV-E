@@ -3322,6 +3322,15 @@ Your current position: [AVATAR_POS]
   <string name="Nametag_Texture_Area_Label">Texture Area: [TEXTURE_AREA] m²</string>
 
   <string name="AttachmentLayerConflictLocked">The attachment layer could not be changed because a conflicting attachment is locked by RLV.</string>
+  <string name="AutoAttachLinksSaved">Auto-attach linked [COUNT] item(s) to [PARENT].</string>
+  <string name="AutoAttachLinksCleared">Auto-attach links removed from [PARENT].</string>
+  <string name="AutoAttachLinksEmpty">Select [PARENT] with at least one other attachment object, then right-click [PARENT].</string>
+  <string name="AttachmentDataBackupSaved">Attachment data was saved to #config/[RLV-E] Attachment Data.</string>
+  <string name="AttachmentDataBackupLoaded">Attachment layers and auto-attach links were restored from #config.</string>
+  <string name="AttachmentDataBackupMissing">No attachment data backup was found in #config.</string>
+  <string name="AttachmentDataBackupUnavailable">The attachment data backup could not be saved in this region.</string>
+  <string name="AttachmentDataBackupTooLarge">The attachment data is too large to fit in a notecard. No backup was changed.</string>
+  <string name="AttachmentDataBackupLoadFailed">The attachment data backup notecard could not be read or is invalid.</string>
   <string name="font_unknown">Unknown Font</string>
   <string name="font_fonts.xml">Inter</string>
   <string name="font_fonts_inter_tight.xml">Inter Tight</string>

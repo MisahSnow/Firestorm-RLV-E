@@ -135,10 +135,49 @@ LLContextMenu* LLInventoryGalleryContextMenu::createMenu()
 void LLInventoryGalleryContextMenu::doToSelected(const LLSD& userdata)
 {
     std::string action = userdata.asString();
-    LLInventoryObject* obj = gInventory.getObject(mUUIDs.front());
+// <FS:MS> Use the right-clicked object as the auto-attach parent and handle attachment metadata actions.
+    LLInventoryObject* obj = gInventory.getObject(mContextItemID.notNull() ? mContextItemID : mUUIDs.front());
     if(!obj) return;
 
-    if (FSAttachmentLayers::isLayerAction(action))
+    if (action == "attachment_data_backup_save" || action == "attachment_data_backup_load")
+    {
+        if (action == "attachment_data_backup_save")
+        {
+            FSAttachmentLayers::saveBackup();
+        }
+        else
+        {
+            FSAttachmentLayers::loadBackup();
+        }
+    }
+    else if (action == "auto_attach_link" || action == "auto_attach_unlink")
+    {
+        const LLViewerInventoryItem* parent_item = gInventory.getItem(obj->getUUID());
+        if (!parent_item || parent_item->getType() != LLAssetType::AT_OBJECT)
+        {
+            return;
+        }
+
+        LLStringUtil::format_map_t args;
+        args["PARENT"] = parent_item->getName();
+        if (action == "auto_attach_unlink")
+        {
+            FSAttachmentLayers::clearAutoAttachLinks(parent_item->getUUID());
+            LLNotificationsUtil::add(
+                "GenericAlert",
+                LLSD().with("MESSAGE", LLTrans::getString("AutoAttachLinksCleared", args)));
+            return;
+        }
+
+        const S32 linked_count = FSAttachmentLayers::setAutoAttachLinks(parent_item->getUUID(), mUUIDs);
+        args["COUNT"] = std::to_string(linked_count);
+        LLNotificationsUtil::add(
+            "GenericAlert",
+            LLSD().with("MESSAGE", LLTrans::getString(
+                linked_count > 0 ? "AutoAttachLinksSaved" : "AutoAttachLinksEmpty", args)));
+    }
+    else if (FSAttachmentLayers::isLayerAction(action))
+// </FS:MS>
     {
         const FSAttachmentLayers::Layer layer = FSAttachmentLayers::fromAction(action);
         for (const LLUUID& id : mUUIDs)
@@ -1042,6 +1081,15 @@ void LLInventoryGalleryContextMenu::updateMenuItemsVisibility(LLContextMenu* men
             add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Bottom");
             add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Hair");
             add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Full Body");
+        }
+        if (is_agent_inventory && obj->getType() == LLAssetType::AT_OBJECT)
+        {
+// <FS:MS> Attachment auto-link and backup actions.
+            items.push_back("Auto-Attach Link");
+            items.push_back("Auto-Attach Unlink");
+            add_context_submenu_entry(items, "Attachment Data Backup", "Attachment Data Backup Save");
+            add_context_submenu_entry(items, "Attachment Data Backup", "Attachment Data Backup Load");
+// </FS:MS>
         }
         if(obj->getType() == LLAssetType::AT_TEXTURE)
         {

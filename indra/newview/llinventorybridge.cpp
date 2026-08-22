@@ -149,7 +149,10 @@ namespace
     constexpr bool is_context_submenu_branch(std::string_view name)
     {
         return (name == "More") || (name == "create_new") || (name == INVENTORY_SUBMENU_MARKETPLACE) ||
-               (name == INVENTORY_SUBMENU_LINKS) || (name == "Attachment Layer");
+               (name == INVENTORY_SUBMENU_LINKS) || (name == "Attachment Layer") ||
+// <FS:MS> Attachment metadata backup submenu.
+               (name == "Attachment Data Backup");
+// </FS:MS>
     }
 }
 
@@ -8244,6 +8247,22 @@ bool confirm_attachment_rez(const LLSD& notification, const LLSD& response)
 
             LL_DEBUGS("Avatar") << "ATT calling addAttachmentRequest " << (itemp ? itemp->getName() : "UNKNOWN") << " id " << item_id << LL_ENDL;
             LLAttachmentsMgr::instance().addAttachmentRequest(item_id, attachment_pt, is_add);
+
+// <FS:MS> Attach objects linked to this parent, guarding against link cycles.
+            static std::set<LLUUID> auto_attach_chain;
+            if (auto_attach_chain.insert(item_id).second)
+            {
+                for (const LLUUID& linked_id : FSAttachmentLayers::getAutoAttachLinks(item_id))
+                {
+                    LLViewerInventoryItem* linked_item = gInventory.getItem(linked_id);
+                    if (linked_item && (!isAgentAvatarValid() || !gAgentAvatarp->isWearingAttachment(linked_id)))
+                    {
+                        rez_attachment(linked_item, nullptr, false);
+                    }
+                }
+                auto_attach_chain.erase(item_id);
+            }
+// </FS:MS>
         }
     }
     return false;
@@ -8288,6 +8307,12 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
             add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Bottom");
             add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Hair");
             add_context_submenu_entry(items, "Attachment Layer", "Attachment Layer Full Body");
+// <FS:MS> Attachment auto-link and backup actions.
+            items.push_back("Auto-Attach Link");
+            items.push_back("Auto-Attach Unlink");
+            add_context_submenu_entry(items, "Attachment Data Backup", "Attachment Data Backup Save");
+            add_context_submenu_entry(items, "Attachment Data Backup", "Attachment Data Backup Load");
+// </FS:MS>
 
             if( get_is_item_worn( mUUID ) )
             {

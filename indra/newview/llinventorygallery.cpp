@@ -1488,6 +1488,9 @@ void LLInventoryGallery::showContextMenu(LLUICtrl* ctrl, S32 x, S32 y, const LLU
 {
     if (mInventoryGalleryMenu && item_id.notNull())
     {
+// <FS:MS> Preserve the right-clicked item as the auto-attach parent.
+        mInventoryGalleryMenu->setContextItemID(item_id);
+// </FS:MS>
         if (std::find(mSelectedItemIDs.begin(), mSelectedItemIDs.end(), item_id) == mSelectedItemIDs.end())
         {
             changeItemSelection(item_id, false);

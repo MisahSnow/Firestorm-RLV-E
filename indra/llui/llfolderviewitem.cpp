@@ -665,6 +665,12 @@ bool LLFolderViewItem::handleRightMouseDown( S32 x, S32 y, MASK mask )
     {
         getRoot()->setSelection(this, false);
     }
+// <FS:MS> Make a selected item the primary selection when it is right-clicked.
+    else
+    {
+        getRoot()->addToSelectionList(this);
+    }
+// </FS:MS>
     make_ui_sound("UISndClick");
     return true;
 }
@@ -2749,4 +2755,3 @@ LLFolderViewItem* LLFolderViewFolder::getPreviousFromChild( LLFolderViewItem* it
 
     return result;
 }
-

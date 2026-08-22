@@ -27,6 +27,12 @@ namespace FSAttachmentLayers
     void setLayer(const LLUUID& item_id, Layer layer);
     void setLayerRecursive(const LLUUID& folder_id, Layer layer);
 
+    S32 setAutoAttachLinks(const LLUUID& parent_id, const uuid_vec_t& selected_ids);
+    void clearAutoAttachLinks(const LLUUID& parent_id);
+    uuid_vec_t getAutoAttachLinks(const LLUUID& parent_id);
+    void saveBackup();
+    void loadBackup();
+
     bool layersConflict(Layer worn_layer, Layer incoming_layer);
 
     // Removes worn attachments that conflict with item_id's assigned layer.

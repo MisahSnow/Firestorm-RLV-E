@@ -26,6 +26,9 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llinventorypanel.h"
+// <FS:MS> Attachment layers, auto-attach links, and backup actions.
+#include "fsattachmentlayers.h"
+// </FS:MS>
 
 #include <utility> // for std::pair<>
 
@@ -2491,6 +2494,65 @@ void LLInventoryPanel::updateSelection()
 
 void LLInventoryPanel::doToSelected(const LLSD& userdata)
 {
+// <FS:MS> Attachment layers, auto-attach links, and backup actions.
+    const std::string action = userdata.asString();
+    if (action == "attachment_data_backup_save" || action == "attachment_data_backup_load")
+    {
+        if (action == "attachment_data_backup_save")
+        {
+            FSAttachmentLayers::saveBackup();
+        }
+        else
+        {
+            FSAttachmentLayers::loadBackup();
+        }
+        return;
+    }
+    if (action == "auto_attach_link" || action == "auto_attach_unlink")
+    {
+        LLFolderViewItem* parent_view = mFolderRoot.get()->getCurSelectedItem();
+        LLFolderViewModelItemInventory* parent_model = parent_view
+            ? dynamic_cast<LLFolderViewModelItemInventory*>(parent_view->getViewModelItem())
+            : nullptr;
+        const LLViewerInventoryItem* parent_item = parent_model ? mInventory->getItem(parent_model->getUUID()) : nullptr;
+        if (!parent_item || parent_item->getType() != LLAssetType::AT_OBJECT)
+        {
+            return;
+        }
+
+        LLStringUtil::format_map_t args;
+        args["PARENT"] = parent_item->getName();
+        if (action == "auto_attach_unlink")
+        {
+            FSAttachmentLayers::clearAutoAttachLinks(parent_item->getUUID());
+            LLNotificationsUtil::add(
+                "GenericAlert",
+                LLSD().with("MESSAGE", LLTrans::getString("AutoAttachLinksCleared", args)));
+            return;
+        }
+
+        uuid_vec_t selected_ids;
+        for (LLFolderViewItem* selected_view : mFolderRoot.get()->getSelectedItems())
+        {
+            const LLFolderViewModelItemInventory* selected_model = selected_view
+                ? dynamic_cast<LLFolderViewModelItemInventory*>(selected_view->getViewModelItem())
+                : nullptr;
+            if (selected_model)
+            {
+                selected_ids.push_back(selected_model->getUUID());
+            }
+        }
+
+        const S32 linked_count = FSAttachmentLayers::setAutoAttachLinks(parent_item->getUUID(), selected_ids);
+        args["COUNT"] = std::to_string(linked_count);
+        LLNotificationsUtil::add(
+            "GenericAlert",
+            LLSD().with("MESSAGE", LLTrans::getString(
+                linked_count > 0 ? "AutoAttachLinksSaved" : "AutoAttachLinksEmpty", args)));
+        return;
+    }
+// </FS:MS>
+
     if (("purge" == userdata.asString()))
     {
         purgeSelectedItems();

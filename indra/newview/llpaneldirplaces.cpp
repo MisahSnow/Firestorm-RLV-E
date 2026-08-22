@@ -78,25 +78,27 @@ LLPanelDirPlaces::~LLPanelDirPlaces()
 void LLPanelDirPlaces::performQuery()
 {
     std::string place_name = childGetValue("name").asString();
-    if (place_name.length() < mMinSearchChars)
-    {
-        return;
-    }
-
     // "hi " is three chars but not a long-enough search
     std::string query_string = place_name;
     LLStringUtil::trim( query_string );
     bool query_was_filtered = (query_string != place_name);
 
+// <FS:MS> An empty Places query lists all directory-visible places.
+    if (!query_string.empty() && place_name.length() < mMinSearchChars)
+    {
+        return;
+    }
+
     // possible we threw away all the short words in the query so check length
-    if ( query_string.length() < mMinSearchChars )
+    if (!query_string.empty() && query_string.length() < mMinSearchChars)
     {
         LLNotificationsUtil::add("SeachFilteredOnShortWordsEmpty");
         return;
     };
+// </FS:MS>
 
     // if we filtered something out, display a popup
-    if ( query_was_filtered )
+    if (query_was_filtered && !query_string.empty())
     {
         LLSD args;
         args["FINALQUERY"] = query_string;
@@ -183,4 +185,3 @@ void LLPanelDirPlaces::queryCore(const std::string& name, S32 category, U32 flag
     msg->addS32Fast(_PREHASH_QueryStart,mSearchStart);
     gAgent.sendReliableMessage();
 }
-

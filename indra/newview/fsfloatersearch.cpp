@@ -285,7 +285,6 @@ void FSFloaterSearch::onOpen(const LLSD& key)
     {
         current_panel->focusDefaultElement();
     }
-
     mEventInfoConnection = gEventNotifier.setEventInfoCallback(boost::bind(&FSFloaterSearch::displayEventDetails, this, _1));
 }
 
@@ -364,7 +363,6 @@ void FSFloaterSearch::onTabChange()
     {
         mDetailsPanel->setVisible(mHasSelection);
     }
-
     if (active_panel == mPanelPeople || active_panel == mPanelGroups)
     {
         mDetailSnapshotParcel->setVisible(false);
@@ -1479,12 +1477,16 @@ void FSPanelSearchPlaces::focusDefaultElement()
 
 void FSPanelSearchPlaces::find()
 {
-    std::string text = filterShortWords(mSearchComboBox->getSimple());
-    if (text.size() == 0)
+// <FS:MS> An empty Places query lists all directory-visible places.
+    std::string raw_text = mSearchComboBox->getSimple();
+    LLStringUtil::trim(raw_text);
+    std::string text = filterShortWords(raw_text);
+    if (!raw_text.empty() && text.empty())
     {
         mSearchResults->setCommentText(LLTrans::getString("search_short"));
         return;
     }
+// </FS:MS>
 
     static LLUICachedControl<bool> inc_pg("ShowPGSims", 1);
     static LLUICachedControl<bool> inc_mature("ShowMatureSims", 0);

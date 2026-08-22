@@ -1103,9 +1103,14 @@ void LLDir::setSkinFolder(const std::string &skin_folder, const std::string& the
     // time it's called, reset mSearchSkinDirs.
     mSearchSkinDirs.clear();
 
-    // <FS:Ansariel> If working directory is different from executable directory, add executable subdirs as searchable folders
+    // <FS:Ansariel> If working directory is different from executable directory, add packaged resource subdirs as searchable folders
     if (LLStringUtil::compareInsensitive(mExecutableDir, mWorkingDir) != 0)
     {
+        // The Linux launcher runs bin/do-not-directly-run-firestorm-bin with the
+        // package root as its working directory. Generated resources such as
+        // emoji_characters.xml live below that root, not beside the binary.
+        addSearchSkinDir(add(mWorkingDir, "skins"));
+        addSearchSkinDir(add(mWorkingDir, "skins", "default"));
         addSearchSkinDir(add(mExecutableDir, "skins"));
         addSearchSkinDir(add(mExecutableDir, "skins", "default"));
     }

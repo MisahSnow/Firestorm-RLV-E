@@ -1017,6 +1017,29 @@
         </menu_item_call>
     </menu>
     <menu_item_call
+     label="Auto-Attach Link"
+     layout="topleft"
+     name="Auto-Attach Link">
+        <menu_item_call.on_click function="Inventory.DoToSelected" parameter="auto_attach_link" />
+    </menu_item_call>
+    <menu_item_call
+     label="Auto-Attach Unlink"
+     layout="topleft"
+     name="Auto-Attach Unlink">
+        <menu_item_call.on_click function="Inventory.DoToSelected" parameter="auto_attach_unlink" />
+    </menu_item_call>
+    <menu
+     label="Attachment Data Backup"
+     layout="topleft"
+     name="Attachment Data Backup">
+        <menu_item_call label="Save to #config" name="Attachment Data Backup Save">
+            <menu_item_call.on_click function="Inventory.DoToSelected" parameter="attachment_data_backup_save" />
+        </menu_item_call>
+        <menu_item_call label="Load from #config" name="Attachment Data Backup Load">
+            <menu_item_call.on_click function="Inventory.DoToSelected" parameter="attachment_data_backup_load" />
+        </menu_item_call>
+    </menu>
+    <menu_item_call
      label="Touch"
      layout="topleft"
      name="Attachment Touch">
